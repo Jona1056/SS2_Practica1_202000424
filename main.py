@@ -130,6 +130,11 @@ def main():
                    
                     except Exception as e:
                         print(f"Error al insertar fila: {e}")
+                    
+                         
+                   
+                print("")
+                print("Datos Cargados correctamente")
                 print("")
 
         elif opcion == "4":
@@ -185,7 +190,7 @@ def main():
                                 print(f"Error al insertar género: {message}")
                                 continue
                         
-                        # Obtener el ID del género
+                     
                         id_genero = result[0][0]
                         Nationality = row[5]
                         #lo mismo 
@@ -206,11 +211,11 @@ def main():
                             else:
                                 print(f"Error al insertar nacionalidad: {message}")
                                 continue
-                        # Obtener el ID de la nacionalidad
+                      
                         id_nacionalidad = result[0][0]
                         id_passenger = row[0]
-                        firstName = row[1].replace("'", "''")  # Escapar comillas simples
-                        lastname = row[2].replace("'", "''")  # Escapar comillas simples
+                        firstName = row[1].replace("'", "''") 
+                        lastname = row[2].replace("'", "''") 
                         age = row[4]
 
                         nombre_continente = row[10].replace("'", "''")
@@ -235,12 +240,10 @@ def main():
                                 print(f"Error al insertar continente: {message}")
                                 continue
                         id_continente = result[0][0]
-                        #PAIS
-                       
+               
                         codigo_pais = row[7].replace("'", "''")
                         nombre_pais = row[8].replace("'", "''")
-                      
-                        #pais
+           
                         query = f"SELECT id_pais FROM DIMPais WHERE pais = '{nombre_pais}'"
                         result, error = db_instance.fetch_data(query)
                         if error:
@@ -260,13 +263,13 @@ def main():
                                 continue
                         id_pais = result[0][0]
                        
-                        #AEROPUERTO
+              
                         nombre_aeropuerto = row[6].replace("'", "''")
                         codigo_aeropuerto = row[12].replace("'", "''")
-                        ##verificar si el codigo_aerepuerto es 0 saltar
+                 
                         if codigo_aeropuerto == "0":
                             continue
-                        #aeropuerto
+                
                         query = f"SELECT id_aeropuerto FROM DIMAereopuerto WHERE aeropuerto = '{nombre_aeropuerto}'"
                         result, error = db_instance.fetch_data(query)
                         if error:
@@ -286,7 +289,7 @@ def main():
                                 continue
                         id_aeropuerto = result[0][0]
                         
-                        #status
+               
                         status = row[14].replace("'", "''")
                         query = f"SELECT id_estado FROM DIMEstado WHERE estado = '{status}'"
                         result, error = db_instance.fetch_data(query)
@@ -307,7 +310,7 @@ def main():
                                 continue
                         id_status = result[0][0]
                         fecha = row[11].replace("'", "''")
-                        #Vuelo
+                   
                         query = f"SELECT id_fecha FROM DIMFecha WHERE fecha = '{fecha}'"
                         result, error = db_instance.fetch_data(query)
                         if error:
@@ -328,7 +331,7 @@ def main():
 
                         id_fecha = result[0][0]
 
-                    # Insertar vuelo en FACTVuelo
+            
                         nombre_piloto = row[13].replace("'", "''")
                         query = f"""
                             INSERT INTO FACTVuelo (
@@ -345,15 +348,10 @@ def main():
                         if not success:
                             print(f"Error al insertar vuelo: {message}")
                             continue
-
-
-                            
                         
-                        
-                        
-                      
-                        
-                            
+                    print("")
+                    print("Datos transformados correctamente")
+                    print("")
 
             except Exception as e:
                  
@@ -362,11 +360,268 @@ def main():
                 # Cerrar la conexión
 
         elif opcion == "5":
-            print("Realizar Consultas")
-            # Aquí podrías realizar más consultas
+            resultados = ""
+            resultados += "Consulta 1: \n"
+            with open("./consultas/consulta1.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    if result:
+                        resultados += "Tabla: " + str(result[0][0]) + ": "+ str(result[0][1])+ " \n"
+                   
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            
+            #consulta 2
+            resultados += "\n"
+            with open("./consultas/consulta2.sql", "r") as file:
+                sql_script = file.read()
+          
+            try:
+                result, error = db_instance.fetch_data(sql_script)
+                resultados += "Consulta 2: \n"
+                if result:
+                
+                    resultados += "Femenino: " + str(result[0][2]) + "%" +"\n"
+                    resultados += "Masculino: " + str(result[1][2]) + "%"+ "\n"
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            
+            resultados += "\n"
+            # Consulta 3
+            with open("./consultas/consulta3.sql", "r") as file:
+                sql_script = file.read()
+          
+            try:
+                result, error = db_instance.fetch_data(sql_script)
+                resultados += "Consulta 3: \n"
+              
+                  
+                 
+                grouped_data = {}
+
+
+                for country, month_year, count in result:
+                    if country not in grouped_data:
+                        grouped_data[country] = {}
+                    grouped_data[country][month_year] = count
+
+                # Convertir el diccionario a una lista de tuplas
+                formatted_data = []
+                for country, months in grouped_data.items():
+
+                    sorted_months = sorted(months.keys())
+                
+                    entry = [country]
+                    for month in sorted_months:
+                        entry.append(f"{month}: {months[month]}")
+                    formatted_data.append(tuple(entry))
+
+           
+                contador = 1
+                for entry in formatted_data:
+   
+                    resultados += f"{contador}. {' - '.join(list(entry))}\n"
+                    contador += 1 
+
+
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+      
+            
+            resultados += "\n"
+            
+            #consulta 4
+            with open("./consultas/consulta4.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 4: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                        
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " + resultado[0] + "-" + str(resultado[1]) + "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            #consulta 5
+            resultados += "\n"
+            with open("./consultas/consulta5.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 5: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                        
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " + resultado[0] + "-" + str(resultado[1]) + "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            resultados += "\n"
+            with open("./consultas/consulta6.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 6: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                        
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " + resultado[0] + "-" + str(resultado[1]) + "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+                
+            resultados += "\n"
+            with open("./consultas/consulta7.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 7: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                        
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " + resultado[0] + "-" + str(resultado[1]) + "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+                
+            resultados += "\n"
+            with open("./consultas/consulta8.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 8: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                        
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " + resultado[0] + "-" + str(resultado[1]) + "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            resultados += "\n"
+            with open("./consultas/consulta9.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 9: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                       
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " + "Genero: "+resultado[0] + " Edad: " + str(resultado[1]) +   " Cantidad: " + str(resultado[2]) + "\n"
+                            if contador == 5:
+                                contador = 0
+                                resultados += "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            resultados += "\n"
+            with open("./consultas/consulta10.sql", "r") as file:
+                sql_script = file.read()
+                queries = sql_script.strip().split(';')
+            try:
+                resultados += "Consulta 10: \n" 
+                for query in queries:
+                    result, error = db_instance.fetch_data(query)
+                  
+                    contador = 1
+                    if result:
+                        
+                        for resultado in result:
+                   
+                            resultados += str(contador)+". " +"Fecha: " +resultado[0] + " - "  +"Cantidad: "+ str(resultado[1]) + "\n"
+                            contador += 1
+                    
+            except Exception as e:
+                print("")
+                print("Error al ejecutar el script SQL")
+                print(e)
+                print("")
+            resultados += "\n"
+          
+            #agregar a un archivo txt llamado resultados, limpiarlo siempre antes
+            with open("resultados.txt", "w") as file:
+                file.write("")
+            with open("resultados.txt", "a") as file:
+                file.write(resultados)
+            print("")  
+            print("Archivo resultados.txt creado con exito")
+            print("")
+   
+   
+
+            
         elif opcion == "6":
             break
         else:
+            print("")  
             print("Opcion Incorrecta")
             print("")
 
